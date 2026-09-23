@@ -71,6 +71,7 @@ import {
 } from "../media/cursorSidecar";
 import { findMediaLinksByFingerprint, registerMediaLinks } from "../media/mediaLinksRegistry";
 import { relinkProjectMedia } from "../media/projectMediaRelinker";
+import { showMessageBoxOver } from "../messageBox";
 import {
 	type LinuxCaptureSourceKind,
 	LinuxNativeCaptureSession,
@@ -2165,10 +2166,7 @@ export function registerIpcHandlers(
 				message: "Accessibility access is required for the editable cursor",
 				detail,
 			} satisfies Electron.MessageBoxOptions;
-			const result =
-				mainWin && !mainWin.isDestroyed()
-					? await dialog.showMessageBox(mainWin, messageOptions)
-					: await dialog.showMessageBox(messageOptions);
+			const result = await showMessageBoxOver(mainWin, messageOptions);
 			if (result.response === 0) {
 				await shell.openExternal(
 					"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
@@ -2206,10 +2204,7 @@ export function registerIpcHandlers(
 					detail:
 						"Allow OpenScreen in macOS System Settings, then come back and choose a screen or window.",
 				} satisfies Electron.MessageBoxOptions;
-				const result =
-					mainWin && !mainWin.isDestroyed()
-						? await dialog.showMessageBox(mainWin, messageOptions)
-						: await dialog.showMessageBox(messageOptions);
+				const result = await showMessageBoxOver(mainWin, messageOptions);
 				if (result.response === 0) {
 					await shell.openExternal(
 						"x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture",
