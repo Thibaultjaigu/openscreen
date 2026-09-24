@@ -28,6 +28,7 @@ import {
 	listMistralModels,
 	listOpenAiCompatibleModels,
 	listOpenRouterModels,
+	listRequestyModels,
 	probeMiniMaxModels,
 } from "../../ai-edition/llm-provider-auth";
 import { PROVIDER_DEFINITIONS } from "../../ai-edition/provider-registry";
@@ -257,6 +258,9 @@ export class AiEditionService {
 			}
 			if (providerId === "openrouter") {
 				return { models: await listOpenRouterModels() };
+			}
+			if (providerId === "requesty") {
+				return { models: await listRequestyModels(cred.value, baseUrl) };
 			}
 			if (providerId === "minimax" || providerId === "minimax-token-plan") {
 				return { models: await probeMiniMaxModels(cred.value, baseUrl) };

@@ -89,6 +89,17 @@ export const PROVIDER_DEFINITIONS: ProviderDefinition[] = [
 		envKeys: ["OPENROUTER_LLM_API_KEY", "OPENROUTER_API_KEY"],
 		setupHint: "Use OPENROUTER_API_KEY or paste an OpenRouter API key.",
 	},
+	{
+		id: "requesty",
+		label: "Requesty API",
+		defaultModel: "anthropic/claude-sonnet-4-5",
+		authKind: "api-key",
+		supportsReasoningEffort: true,
+		// EU users can point the base URL at https://router.eu.requesty.ai/v1.
+		baseUrl: "https://router.requesty.ai/v1",
+		envKeys: ["REQUESTY_LLM_API_KEY", "REQUESTY_API_KEY"],
+		setupHint: "Use REQUESTY_API_KEY or paste a Requesty API key.",
+	},
 	// REMOVED for 1.8.0: "openai-oauth" (ChatGPT) and "copilot-proxy" (GitHub
 	// Copilot). Both reached a user's subscription by presenting GitHub's and
 	// OpenAI's own client IDs and editor User-Agents against endpoints reserved

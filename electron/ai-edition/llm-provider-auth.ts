@@ -63,6 +63,24 @@ export async function listOpenRouterModels(): Promise<string[]> {
 	return fetchModelIds("https://openrouter.ai/api/v1/models");
 }
 
+/**
+ * Requesty's managed policies (`/models/managed`, curated ids such as
+ * `claude-sonnet-4-5`) come first, followed by the full `vendor/model`
+ * catalog from `/models`. With a key, `/models` returns only the models the
+ * key's organization allows. Either list alone is enough; this only throws
+ * when both calls fail.
+ */
+export async function listRequestyModels(apiKey?: string, baseUrl?: string): Promise<string[]> {
+	const root = (baseUrl || "https://router.requesty.ai/v1").replace(/\/+$/, "");
+	const managed = await fetchModelIds(`${root}/models/managed`).catch((): string[] => []);
+	const catalog = await fetchModelIds(`${root}/models`, apiKey).catch((error) => {
+		if (managed.length === 0) throw error;
+		return [];
+	});
+	const seen = new Set(managed);
+	return [...managed, ...catalog.filter((id) => !seen.has(id))];
+}
+
 export async function listOpenAiCompatibleModels(
 	baseUrl: string,
 	apiKey?: string,
