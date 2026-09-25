@@ -20,6 +20,7 @@ import {
 	getProviderDefinition,
 	normalizeProviderId,
 	type ProviderDefinition,
+	resolveRequestyBaseUrl,
 } from "../provider-registry";
 
 // --- per-provider reasoning-effort capability table -----------------------
@@ -438,7 +439,7 @@ export async function createOpenScreenChatModel(
 		config.provider === "openrouter"
 			? config.baseUrl || "https://openrouter.ai/api/v1"
 			: config.provider === "requesty"
-				? config.baseUrl || "https://router.requesty.ai/v1"
+				? resolveRequestyBaseUrl(config.baseUrl)
 				: config.provider === "google"
 					? config.baseUrl || "https://generativelanguage.googleapis.com/v1beta/openai"
 					: config.baseUrl;

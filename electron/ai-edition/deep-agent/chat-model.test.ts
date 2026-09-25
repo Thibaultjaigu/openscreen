@@ -60,6 +60,17 @@ describe("createOpenScreenChatModel (Requesty)", () => {
 		});
 		expect(clientConfig(model).baseURL).toBe("https://router.eu.requesty.ai/v1");
 	});
+
+	it("rejects a non-https base URL", async () => {
+		await expect(
+			createOpenScreenChatModel({
+				provider: "requesty",
+				model: "openai/gpt-4o-mini",
+				apiKey: "test-key",
+				baseUrl: "http://router.eu.requesty.ai/v1",
+			}),
+		).rejects.toThrow(/https/);
+	});
 });
 
 describe("createOpenScreenChatModel — Anthropic-wire output budget", () => {

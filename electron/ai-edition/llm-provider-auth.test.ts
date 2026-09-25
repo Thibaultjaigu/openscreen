@@ -168,6 +168,14 @@ describe("listRequestyModels", () => {
 		expect(models).toEqual(["gpt-5-mini@eu"]);
 	});
 
+	it("refuses a non-https base URL before sending the key", async () => {
+		const fetchMock = mockListFetch({});
+		await expect(listRequestyModels("rqsty-test", "http://router.requesty.ai/v1")).rejects.toThrow(
+			/https/,
+		);
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
 	it("throws when neither list is reachable", async () => {
 		mockListFetch({});
 		await expect(listRequestyModels("rqsty-test")).rejects.toThrow(/HTTP 404/);

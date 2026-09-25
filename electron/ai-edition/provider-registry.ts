@@ -29,6 +29,8 @@ export interface ProviderDefinition {
 	wireProtocol?: "anthropic" | "openai";
 }
 
+export const REQUESTY_DEFAULT_BASE_URL = "https://router.requesty.ai/v1";
+
 export const PROVIDER_DEFINITIONS: ProviderDefinition[] = [
 	{
 		id: "anthropic",
@@ -96,7 +98,7 @@ export const PROVIDER_DEFINITIONS: ProviderDefinition[] = [
 		authKind: "api-key",
 		supportsReasoningEffort: true,
 		// EU users can point the base URL at https://router.eu.requesty.ai/v1.
-		baseUrl: "https://router.requesty.ai/v1",
+		baseUrl: REQUESTY_DEFAULT_BASE_URL,
 		envKeys: ["REQUESTY_LLM_API_KEY", "REQUESTY_API_KEY"],
 		setupHint: "Use REQUESTY_API_KEY or paste a Requesty API key.",
 	},
@@ -262,4 +264,23 @@ export function normalizeReasoningEffort(
 					? OPENROUTER_REASONING_EFFORTS
 					: GOOGLE_REASONING_EFFORTS;
 	return supported.includes(effort) ? effort : "medium";
+}
+
+/**
+ * The Requesty base URL is editable (for the EU router), and both model
+ * discovery and chat send the API key to it, so only https URLs are accepted.
+ * Returns the URL without trailing slashes, or the default when unset.
+ */
+export function resolveRequestyBaseUrl(baseUrl?: string): string {
+	const url = (baseUrl?.trim() || REQUESTY_DEFAULT_BASE_URL).replace(/\/+$/, "");
+	let protocol = "";
+	try {
+		protocol = new URL(url).protocol;
+	} catch {
+		// Falls through to the error below.
+	}
+	if (protocol !== "https:") {
+		throw new Error("Requesty base URL must be an https:// URL");
+	}
+	return url;
 }

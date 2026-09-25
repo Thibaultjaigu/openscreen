@@ -12,6 +12,8 @@
 //
 // Credentials still live in the `safeStorage` blob via `LlmConfigStore`.
 
+import { resolveRequestyBaseUrl } from "./provider-registry";
+
 /**
  * Generic `GET {url}` model-list fetch shared by the OpenAI-shaped
  * (`{data: [{id}]}`) and Anthropic-shaped (`{data: [{id}]}`) list endpoints.
@@ -71,7 +73,7 @@ export async function listOpenRouterModels(): Promise<string[]> {
  * when both calls fail.
  */
 export async function listRequestyModels(apiKey?: string, baseUrl?: string): Promise<string[]> {
-	const root = (baseUrl || "https://router.requesty.ai/v1").replace(/\/+$/, "");
+	const root = resolveRequestyBaseUrl(baseUrl);
 	const managed = await fetchModelIds(`${root}/models/managed`).catch((): string[] => []);
 	const catalog = await fetchModelIds(`${root}/models`, apiKey).catch((error) => {
 		if (managed.length === 0) throw error;

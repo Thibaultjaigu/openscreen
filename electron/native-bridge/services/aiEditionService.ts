@@ -31,7 +31,7 @@ import {
 	listRequestyModels,
 	probeMiniMaxModels,
 } from "../../ai-edition/llm-provider-auth";
-import { PROVIDER_DEFINITIONS } from "../../ai-edition/provider-registry";
+import { PROVIDER_DEFINITIONS, resolveRequestyBaseUrl } from "../../ai-edition/provider-registry";
 
 export interface AiEditionServiceOptions {
 	documents: DocumentService;
@@ -200,6 +200,7 @@ export class AiEditionService {
 
 	async llmSetConfig(config: AiEditionLlmConfig): Promise<AiEditionDocumentResult> {
 		try {
+			if (config.provider === "requesty") resolveRequestyBaseUrl(config.baseUrl);
 			await this.llmConfig.setConfig(config);
 			return { success: true };
 		} catch (error) {
