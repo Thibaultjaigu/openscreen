@@ -158,14 +158,49 @@ describe("listRequestyModels", () => {
 		expect(headers.Authorization).toBe("Bearer rqsty-test");
 	});
 
-	it("uses a regional base URL and keeps the managed list when the catalog fails", async () => {
+	it("sends the key on the managed call too", async () => {
+		const fetchMock = mockListFetch({
+			"https://router.requesty.ai/v1/models/managed": { status: 200, ids: ["claude-sonnet-4-5"] },
+			"https://router.requesty.ai/v1/models": { status: 200, ids: ["openai/gpt-4o-mini"] },
+		});
+
+		await listRequestyModels("rqsty-test");
+
+		const managedCall = fetchMock.mock.calls.find(
+			([url]) => String(url) === "https://router.requesty.ai/v1/models/managed",
+		);
+		const headers = (managedCall?.[1] as RequestInit | undefined)?.headers as Record<
+			string,
+			string
+		>;
+		expect(headers.Authorization).toBe("Bearer rqsty-test");
+	});
+
+	it("uses a regional base URL", async () => {
 		mockListFetch({
 			"https://router.eu.requesty.ai/v1/models/managed": { status: 200, ids: ["gpt-5-mini@eu"] },
-			"https://router.eu.requesty.ai/v1/models": { status: 403 },
+			"https://router.eu.requesty.ai/v1/models": { status: 200, ids: ["openai/gpt-5-mini"] },
 		});
 
 		const models = await listRequestyModels("rqsty-test", "https://router.eu.requesty.ai/v1/");
-		expect(models).toEqual(["gpt-5-mini@eu"]);
+		expect(models).toEqual(["gpt-5-mini@eu", "openai/gpt-5-mini"]);
+	});
+
+	it("does not fall back to managed ids when the keyed catalog fails", async () => {
+		mockListFetch({
+			"https://router.requesty.ai/v1/models/managed": { status: 200, ids: ["gpt-5-mini"] },
+			"https://router.requesty.ai/v1/models": { status: 403 },
+		});
+
+		await expect(listRequestyModels("rqsty-test")).rejects.toThrow(/HTTP 403/);
+	});
+
+	it("keeps the catalog when the managed list fails", async () => {
+		mockListFetch({
+			"https://router.requesty.ai/v1/models": { status: 200, ids: ["openai/gpt-4o-mini"] },
+		});
+
+		expect(await listRequestyModels("rqsty-test")).toEqual(["openai/gpt-4o-mini"]);
 	});
 
 	it("refuses a non-https base URL before sending the key", async () => {
@@ -174,10 +209,5 @@ describe("listRequestyModels", () => {
 			/https/,
 		);
 		expect(fetchMock).not.toHaveBeenCalled();
-	});
-
-	it("throws when neither list is reachable", async () => {
-		mockListFetch({});
-		await expect(listRequestyModels("rqsty-test")).rejects.toThrow(/HTTP 404/);
 	});
 });

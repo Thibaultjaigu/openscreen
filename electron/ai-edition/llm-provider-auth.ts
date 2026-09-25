@@ -68,17 +68,15 @@ export async function listOpenRouterModels(): Promise<string[]> {
 /**
  * Requesty's managed policies (`/models/managed`, curated ids such as
  * `claude-sonnet-4-5`) come first, followed by the full `vendor/model`
- * catalog from `/models`. With a key, `/models` returns only the models the
- * key's organization allows. Either list alone is enough; this only throws
- * when both calls fail.
+ * catalog from `/models`. Both calls carry the key, and with a key `/models`
+ * returns only the models the key's organization allows. The keyed catalog is
+ * required: when it fails, this throws rather than offering managed ids the
+ * key was never checked against.
  */
-export async function listRequestyModels(apiKey?: string, baseUrl?: string): Promise<string[]> {
+export async function listRequestyModels(apiKey: string, baseUrl?: string): Promise<string[]> {
 	const root = resolveRequestyBaseUrl(baseUrl);
-	const managed = await fetchModelIds(`${root}/models/managed`).catch((): string[] => []);
-	const catalog = await fetchModelIds(`${root}/models`, apiKey).catch((error) => {
-		if (managed.length === 0) throw error;
-		return [];
-	});
+	const catalog = await fetchModelIds(`${root}/models`, apiKey);
+	const managed = await fetchModelIds(`${root}/models/managed`, apiKey).catch((): string[] => []);
 	const seen = new Set(managed);
 	return [...managed, ...catalog.filter((id) => !seen.has(id))];
 }
